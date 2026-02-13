@@ -2,7 +2,23 @@
 
 AI-powered CV analysis platform that provides deep insights into technical capabilities, skill distribution, and personality signals through multi-dimensional visualization.
 
-## 🚀 Features
+## 🚀 Quick Start
+
+**Want to run the backend immediately?** See [QUICKSTART.md](QUICKSTART.md) or use our helper scripts:
+
+```bash
+# Linux/Mac
+cd personalens-backend
+./run_backend.sh
+
+# Windows
+cd personalens-backend
+run_backend.bat
+```
+
+The script automatically sets up everything and starts the backend server!
+
+## 🎯 Features
 
 - **User Authentication**: Secure JWT-based authentication with registration and login
 - **CV Upload**: Drag-and-drop PDF upload with validation
@@ -61,14 +77,25 @@ AI-powered CV analysis platform that provides deep insights into technical capab
 
 ## 🛠️ Development Setup
 
-### Backend Setup
+> **💡 Tip**: Use the helper scripts for the easiest setup! See [QUICKSTART.md](QUICKSTART.md)
+
+### Backend Setup (Manual)
 
 1. **Navigate to backend directory**
    ```bash
    cd personalens-backend
    ```
 
-2. **Create virtual environment**
+2. **Use the helper script (Recommended)**
+   ```bash
+   ./run_backend.sh  # Linux/Mac
+   # OR
+   run_backend.bat   # Windows
+   ```
+   
+   **Or follow manual steps:**
+
+3. **Create virtual environment**
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
