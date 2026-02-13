@@ -20,6 +20,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/history" element={<History />} />
           
           {/* Protected Routes */}
           <Route
@@ -38,18 +39,10 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/history"
-            element={
-              <ProtectedRoute>
-                <History />
-              </ProtectedRoute>
-            }
-          />
           
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/upload" replace />} />
-          <Route path="*" element={<Navigate to="/upload" replace />} />
+          {/* Default redirect to history page */}
+          <Route path="/" element={<Navigate to="/history" replace />} />
+          <Route path="*" element={<Navigate to="/history" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
