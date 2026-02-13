@@ -23,11 +23,11 @@ class Settings(BaseSettings):
     
     # MongoDB Configuration
     MONGODB_URI: str = Field(
-        default="mongodb://admin:password@localhost:27017",
+        default="mongodb+srv://sadumina:Sadumina2003@sadumina.c82ip.mongodb.net/coconut_analytics?retryWrites=true&w=majority",
         description="MongoDB connection URI"
     )
     DATABASE_NAME: str = Field(
-        default="personalens",
+        default="coconut_analytics",
         description="Database name"
     )
     

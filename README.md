@@ -2,7 +2,23 @@
 
 AI-powered CV analysis platform that provides deep insights into technical capabilities, skill distribution, and personality signals through multi-dimensional visualization.
 
-## 🚀 Features
+## 🚀 Quick Start
+
+**Want to run the backend immediately?** See [QUICKSTART.md](QUICKSTART.md) or use our helper scripts:
+
+```bash
+# Linux/Mac
+cd personalens-backend
+./run_backend.sh
+
+# Windows
+cd personalens-backend
+run_backend.bat
+```
+
+The script automatically sets up everything and starts the backend server!
+
+## 🎯 Features
 
 - **User Authentication**: Secure JWT-based authentication with registration and login
 - **CV Upload**: Drag-and-drop PDF upload with validation
@@ -61,14 +77,25 @@ AI-powered CV analysis platform that provides deep insights into technical capab
 
 ## 🛠️ Development Setup
 
-### Backend Setup
+> **💡 Tip**: Use the helper scripts for the easiest setup! See [QUICKSTART.md](QUICKSTART.md)
+
+### Backend Setup (Manual)
 
 1. **Navigate to backend directory**
    ```bash
    cd personalens-backend
    ```
 
-2. **Create virtual environment**
+2. **Use the helper script (Recommended)**
+   ```bash
+   ./run_backend.sh  # Linux/Mac
+   # OR
+   run_backend.bat   # Windows
+   ```
+   
+   **Or follow manual steps:**
+
+3. **Create virtual environment**
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -82,18 +109,11 @@ AI-powered CV analysis platform that provides deep insights into technical capab
 4. **Configure environment**
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration
+   # The .env file is already configured with MongoDB Atlas cloud database
+   # Edit .env if you need to use a different MongoDB instance
    ```
 
-5. **Start MongoDB** (if not using Docker)
-   ```bash
-   docker run -d -p 27017:27017 --name mongodb \
-     -e MONGO_INITDB_ROOT_USERNAME=admin \
-     -e MONGO_INITDB_ROOT_PASSWORD=password \
-     mongo:7
-   ```
-
-6. **Run the backend**
+5. **Run the backend**
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
@@ -158,8 +178,9 @@ PersonaLens/
 
 ### Backend (.env)
 ```
-MONGODB_URI=mongodb://admin:password@localhost:27017
-DATABASE_NAME=personalens
+# MongoDB Atlas Cloud Database
+MONGODB_URI=mongodb+srv://sadumina:Sadumina2003@sadumina.c82ip.mongodb.net/coconut_analytics?retryWrites=true&w=majority
+DATABASE_NAME=coconut_analytics
 JWT_SECRET=your-super-secret-key-change-this-in-production
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
