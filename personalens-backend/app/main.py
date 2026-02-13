@@ -28,8 +28,8 @@ async def lifespan(app: FastAPI):
     logger.info("Starting PersonaLens API")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     
-    # Connect to MongoDB
-    await Database.connect_db()
+    # Connect to MongoDB (non-blocking - allows app to start even if DB fails)
+    await Database.connect_db(fail_on_error=False)
     
     yield
     
@@ -71,14 +71,19 @@ async def health_check():
     db_status = "disconnected"
     db_error = None
     
-    try:
-        db = Database.get_database()
-        # Try to ping the database
-        await db.command('ping')
-        db_status = "connected"
-    except Exception as e:
-        db_error = str(e)
-        logger.error(f"Database health check failed: {e}")
+    # Check if database was connected during startup
+    if not Database.connected:
+        db_status = "disconnected"
+        db_error = "Database connection failed during startup. Check logs for details."
+    else:
+        try:
+            db = Database.get_database()
+            # Try to ping the database
+            await db.command('ping')
+            db_status = "connected"
+        except Exception as e:
+            db_error = str(e)
+            logger.error(f"Database health check failed: {e}")
     
     return {
         "status": "ok" if db_status == "connected" else "degraded",

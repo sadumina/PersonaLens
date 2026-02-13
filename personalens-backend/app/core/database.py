@@ -17,28 +17,60 @@ class Database:
     
     client: Optional[AsyncIOMotorClient] = None
     db: Optional[AsyncIOMotorDatabase] = None
+    connected: bool = False  # Track connection status
     
     @classmethod
-    async def connect_db(cls) -> None:
+    async def connect_db(cls, fail_on_error: bool = False) -> None:
         """
         Establish connection to MongoDB.
         Called during application startup.
+        Includes timeouts to prevent hanging on connection issues.
+        
+        Args:
+            fail_on_error: If True, raises exception on connection failure.
+                          If False, logs error and continues (allows app to start).
         """
         try:
             logger.info(f"Connecting to MongoDB: {settings.DATABASE_NAME}")
-            cls.client = AsyncIOMotorClient(settings.MONGODB_URI)
+            
+            # Create client with proper timeouts
+            # serverSelectionTimeoutMS: timeout for selecting a server (default 30s, we use 10s)
+            # connectTimeoutMS: timeout for establishing connection (default 20s, we use 10s)
+            # socketTimeoutMS: timeout for socket operations (default None, we use 10s)
+            cls.client = AsyncIOMotorClient(
+                settings.MONGODB_URI,
+                serverSelectionTimeoutMS=10000,  # 10 seconds
+                connectTimeoutMS=10000,           # 10 seconds
+                socketTimeoutMS=10000,            # 10 seconds
+                retryWrites=True,                 # Retry failed writes
+                w='majority'                      # Wait for majority acknowledgment
+            )
             cls.db = cls.client[settings.DATABASE_NAME]
             
-            # Test the connection
+            # Test the connection with timeout
+            logger.info("Testing MongoDB connection...")
             await cls.client.admin.command('ping')
-            logger.info("Successfully connected to MongoDB")
+            logger.info("✅ Successfully connected to MongoDB")
+            cls.connected = True
             
-            # Create indexes
+            # Create indexes (non-blocking)
             await cls.create_indexes()
             
         except Exception as e:
-            logger.error(f"Failed to connect to MongoDB: {e}")
-            raise
+            logger.error(f"❌ Failed to connect to MongoDB: {e}")
+            logger.error("=" * 70)
+            logger.error("MONGODB CONNECTION FAILED - Please check:")
+            logger.error("1. MongoDB Atlas IP whitelist (Network Access)")
+            logger.error("   - Add your IP or 0.0.0.0/0 for testing")
+            logger.error("2. Database credentials in .env file are correct")
+            logger.error("3. Network connectivity and DNS resolution")
+            logger.error("4. MongoDB Atlas cluster is not paused")
+            logger.error("=" * 70)
+            logger.warning("⚠️  App will start but database operations will fail")
+            cls.connected = False
+            
+            if fail_on_error:
+                raise
     
     @classmethod
     async def close_db(cls) -> None:
@@ -101,8 +133,11 @@ class Database:
         Raises:
             RuntimeError: If database is not connected
         """
-        if cls.db is None:
-            raise RuntimeError("Database not connected. Call connect_db() first.")
+        if cls.db is None or not cls.connected:
+            raise RuntimeError(
+                "Database not connected. "
+                "Please check MongoDB connection settings and ensure IP is whitelisted in MongoDB Atlas."
+            )
         return cls.db
     
     @classmethod
