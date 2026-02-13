@@ -56,23 +56,39 @@ class Database:
     async def create_indexes(cls) -> None:
         """
         Create database indexes for performance optimization.
+        Handles duplicate key errors gracefully.
         """
         if cls.db is None:
             return
         
         try:
-            # Create indexes for users collection
-            await cls.db.users.create_index("email", unique=True)
-            await cls.db.users.create_index("username", unique=True)
+            # Create indexes for users collection with error handling
+            try:
+                await cls.db.users.create_index("email", unique=True)
+                logger.info("Created unique index on users.email")
+            except Exception as e:
+                # Index might already exist or have conflicts
+                logger.warning(f"Email index creation skipped: {e}")
+            
+            try:
+                await cls.db.users.create_index("username", unique=True)
+                logger.info("Created unique index on users.username")
+            except Exception as e:
+                logger.warning(f"Username index creation skipped: {e}")
             
             # Create indexes for analyses collection
-            await cls.db.analyses.create_index("user_id")
-            await cls.db.analyses.create_index("timestamp")
-            await cls.db.analyses.create_index("analysis_id", unique=True)
+            try:
+                await cls.db.analyses.create_index("user_id")
+                await cls.db.analyses.create_index("timestamp")
+                await cls.db.analyses.create_index("analysis_id", unique=True)
+                logger.info("Created indexes on analyses collection")
+            except Exception as e:
+                logger.warning(f"Analysis indexes creation skipped: {e}")
             
-            logger.info("Database indexes created successfully")
+            logger.info("Database index setup completed")
         except Exception as e:
             logger.warning(f"Index creation warning: {e}")
+            # Don't fail the startup if index creation fails
     
     @classmethod
     def get_database(cls) -> AsyncIOMotorDatabase:

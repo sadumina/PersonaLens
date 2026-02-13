@@ -31,26 +31,65 @@ async def register(user_data: UserRegister):
         HTTPException: If username or email already exists
     """
     try:
-        db = Database.get_database()
+        logger.info(f"Registration attempt for email: {user_data.email}, username: {user_data.username}")
+        
+        # Get database
+        try:
+            db = Database.get_database()
+            logger.info("Database connection obtained")
+        except Exception as e:
+            logger.error(f"Failed to get database: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Database unavailable: {str(e)}"
+            )
         
         # Check if email already exists
-        existing_email = await db.users.find_one({"email": user_data.email})
-        if existing_email:
+        try:
+            existing_email = await db.users.find_one({"email": user_data.email})
+            if existing_email:
+                logger.warning(f"Email already registered: {user_data.email}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered"
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error checking existing email: {e}")
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Database query failed: {str(e)}"
             )
         
         # Check if username already exists
-        existing_username = await db.users.find_one({"username": user_data.username})
-        if existing_username:
+        try:
+            existing_username = await db.users.find_one({"username": user_data.username})
+            if existing_username:
+                logger.warning(f"Username already taken: {user_data.username}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Username already taken"
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error checking existing username: {e}")
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already taken"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Database query failed: {str(e)}"
             )
         
         # Hash password
-        hashed_password = SecurityService.hash_password(user_data.password)
+        try:
+            hashed_password = SecurityService.hash_password(user_data.password)
+            logger.info("Password hashed successfully")
+        except Exception as e:
+            logger.error(f"Password hashing failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Password processing failed: {str(e)}"
+            )
         
         # Create user document
         user_doc = {
@@ -62,10 +101,16 @@ async def register(user_data: UserRegister):
         }
         
         # Insert user
-        result = await db.users.insert_one(user_doc)
-        user_id = str(result.inserted_id)
-        
-        logger.info(f"New user registered: {user_data.username} ({user_data.email})")
+        try:
+            result = await db.users.insert_one(user_doc)
+            user_id = str(result.inserted_id)
+            logger.info(f"New user registered successfully: {user_data.username} ({user_data.email}), ID: {user_id}")
+        except Exception as e:
+            logger.error(f"Failed to insert user: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to create user: {str(e)}"
+            )
         
         return UserResponse(
             id=user_id,
@@ -78,10 +123,10 @@ async def register(user_data: UserRegister):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Registration failed: {e}")
+        logger.error(f"Unexpected registration error: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Registration failed"
+            detail=f"Registration failed: {str(e)}"
         )
 
 

@@ -61,18 +61,34 @@ app.include_router(analyze_router)
 
 
 @app.get("/health")
-def health_check():
+async def health_check():
     """
-    Health check endpoint.
+    Health check endpoint with database connectivity check.
     
     Returns:
-        Dict: Status information
+        Dict: Status information including database status
     """
+    db_status = "disconnected"
+    db_error = None
+    
+    try:
+        db = Database.get_database()
+        # Try to ping the database
+        await db.command('ping')
+        db_status = "connected"
+    except Exception as e:
+        db_error = str(e)
+        logger.error(f"Database health check failed: {e}")
+    
     return {
-        "status": "ok",
+        "status": "ok" if db_status == "connected" else "degraded",
         "service": "PersonaLens API",
         "version": "1.0.0",
-        "environment": settings.ENVIRONMENT
+        "environment": settings.ENVIRONMENT,
+        "database": {
+            "status": db_status,
+            "error": db_error
+        }
     }
 
 
