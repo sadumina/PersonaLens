@@ -29,15 +29,25 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle 401 errors (redirect to login)
+// Response interceptor - Handle 401 errors intelligently
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear auth data and redirect to login
+      // Only redirect to login if user is on a protected page
+      // Don't redirect if browsing public pages (history, etc)
+      const currentPath = window.location.pathname;
+      const publicPaths = ['/', '/history', '/login', '/register'];
+      const isPublicPath = publicPaths.some(path => currentPath === path || currentPath.startsWith(path));
+      
+      // Clear invalid token
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      
+      // Only redirect if trying to access protected resource
+      if (!isPublicPath) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

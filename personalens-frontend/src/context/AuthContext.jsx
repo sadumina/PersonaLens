@@ -20,13 +20,19 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
-        const response = await authAPI.getCurrentUser();
-        setUser(response.data);
-        setIsAuthenticated(true);
+      if (!token) {
+        // No token, user is not authenticated - this is normal, not an error
+        setLoading(false);
+        return;
       }
+      
+      // Token exists, verify it with the backend
+      const response = await authAPI.getCurrentUser();
+      setUser(response.data);
+      setIsAuthenticated(true);
     } catch (error) {
-      console.error('Auth check failed:', error);
+      // Token is invalid or expired, clear it silently
+      console.log('Auth token invalid or expired, clearing session');
       logout();
     } finally {
       setLoading(false);
