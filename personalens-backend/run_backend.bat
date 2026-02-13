@@ -18,27 +18,10 @@ if not exist "requirements.txt" (
     exit /b 1
 )
 
-echo [Step 1] Checking MongoDB...
-REM Check if MongoDB is running
-docker ps | findstr mongodb > nul
-if %ERRORLEVEL% == 0 (
-    echo [OK] MongoDB is already running
-) else (
-    echo [INFO] MongoDB not found. Starting MongoDB with Docker...
-    
-    REM Check if container exists but is stopped
-    docker ps -a | findstr mongodb > nul
-    if %ERRORLEVEL% == 0 (
-        echo Starting existing MongoDB container...
-        docker start mongodb
-    ) else (
-        echo Creating new MongoDB container...
-        docker run -d -p 27017:27017 --name mongodb -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password mongo:7
-    )
-    
-    echo [OK] MongoDB started successfully
-    timeout /t 2 > nul
-)
+echo [Step 1] Checking MongoDB configuration...
+REM MongoDB Atlas (cloud) is configured in .env - no local MongoDB needed
+echo [OK] Using MongoDB Atlas (cloud database)
+echo [INFO] No local MongoDB setup required
 echo.
 
 echo [Step 2] Setting up Python environment...

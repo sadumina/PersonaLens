@@ -25,25 +25,32 @@ The script will automatically:
 
 ### Option 2: Manual Setup
 
+**Note:** This project uses MongoDB Atlas (cloud database). The connection is already configured in `.env`.
+
 ```bash
-# 1. Start MongoDB (if not using Docker)
+# 1. Setup Python environment
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Setup environment (already configured for MongoDB Atlas)
+cp .env.example .env
+
+# 4. Run the backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+To use a local MongoDB instead:
+```bash
+# Start local MongoDB
 docker run -d -p 27017:27017 --name mongodb \
   -e MONGO_INITDB_ROOT_USERNAME=admin \
   -e MONGO_INITDB_ROOT_PASSWORD=password \
   mongo:7
 
-# 2. Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Setup environment
-cp .env.example .env
-
-# 5. Run the backend
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Update .env with: MONGODB_URI=mongodb://admin:password@localhost:27017
 ```
 
 ## 📍 Access Points
@@ -70,14 +77,17 @@ app/
 Edit `.env` to configure:
 
 ```env
-MONGODB_URI=mongodb://admin:password@localhost:27017
-DATABASE_NAME=personalens
+# MongoDB Atlas Cloud Database
+MONGODB_URI=mongodb+srv://sadumina:Sadumina2003@sadumina.c82ip.mongodb.net/coconut_analytics?retryWrites=true&w=majority
+DATABASE_NAME=coconut_analytics
 JWT_SECRET=your-super-secret-key-change-this-in-production
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 CORS_ORIGINS=["http://localhost:3000", "http://localhost:5173"]
 ENVIRONMENT=development
 ```
+
+**Note:** The project is configured to use MongoDB Atlas (cloud). For local development, you can switch to a local MongoDB instance if needed.
 
 ## 📚 API Endpoints
 
@@ -108,11 +118,19 @@ python test_api.py
 
 ### MongoDB Connection Issues
 ```bash
-# Check if MongoDB is running
-docker ps | grep mongo
+# The project uses MongoDB Atlas (cloud database)
+# If you see connection errors:
+# 1. Check your internet connection
+# 2. Verify credentials in .env file
+# 3. Check MongoDB Atlas IP whitelist settings (allow your IP)
 
-# Restart MongoDB
-docker restart mongodb
+# To use local MongoDB instead:
+docker run -d -p 27017:27017 --name mongodb \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=password \
+  mongo:7
+
+# Then update .env: MONGODB_URI=mongodb://admin:password@localhost:27017
 ```
 
 ### Module Import Errors

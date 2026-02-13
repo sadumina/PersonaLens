@@ -26,15 +26,20 @@ docker-compose down
 
 ## Option 2: Manual Setup (Development) 💻
 
-### Step 1: Start MongoDB
+### Step 1: MongoDB Configuration
 
-If you don't have MongoDB installed, use Docker:
+**Note:** This project is configured to use MongoDB Atlas (cloud database). The connection URI is already set in the `.env` file.
+
+If you need to use a local MongoDB instead, you can:
 
 ```bash
+# Start local MongoDB with Docker
 docker run -d -p 27017:27017 --name mongodb \
   -e MONGO_INITDB_ROOT_USERNAME=admin \
   -e MONGO_INITDB_ROOT_PASSWORD=password \
   mongo:7
+
+# Then update .env with: MONGODB_URI=mongodb://admin:password@localhost:27017
 ```
 
 ### Step 2: Setup Backend
@@ -135,14 +140,19 @@ pip install -r requirements.txt
 
 ### "Cannot connect to MongoDB"
 ```bash
-# Check if MongoDB is running
-docker ps | grep mongo
+# The project uses MongoDB Atlas (cloud database)
+# If you see connection errors, check:
+# 1. Your internet connection
+# 2. MongoDB Atlas IP whitelist settings
+# 3. Credentials in .env file
 
-# If not running, start it:
+# To use local MongoDB instead:
 docker run -d -p 27017:27017 --name mongodb \
   -e MONGO_INITDB_ROOT_USERNAME=admin \
   -e MONGO_INITDB_ROOT_PASSWORD=password \
   mongo:7
+
+# Then update .env: MONGODB_URI=mongodb://admin:password@localhost:27017
 ```
 
 ### "Port 8000 already in use"
@@ -171,8 +181,9 @@ pip install -r requirements.txt --upgrade
 The backend uses environment variables from `.env` file:
 
 ```env
-MONGODB_URI=mongodb://admin:password@localhost:27017
-DATABASE_NAME=personalens
+# MongoDB Atlas Cloud URI
+MONGODB_URI=mongodb+srv://sadumina:Sadumina2003@sadumina.c82ip.mongodb.net/coconut_analytics?retryWrites=true&w=majority
+DATABASE_NAME=coconut_analytics
 JWT_SECRET=your-super-secret-key-change-this-in-production
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440

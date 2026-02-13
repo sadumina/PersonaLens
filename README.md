@@ -109,18 +109,11 @@ The script automatically sets up everything and starts the backend server!
 4. **Configure environment**
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration
+   # The .env file is already configured with MongoDB Atlas cloud database
+   # Edit .env if you need to use a different MongoDB instance
    ```
 
-5. **Start MongoDB** (if not using Docker)
-   ```bash
-   docker run -d -p 27017:27017 --name mongodb \
-     -e MONGO_INITDB_ROOT_USERNAME=admin \
-     -e MONGO_INITDB_ROOT_PASSWORD=password \
-     mongo:7
-   ```
-
-6. **Run the backend**
+5. **Run the backend**
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
@@ -185,8 +178,9 @@ PersonaLens/
 
 ### Backend (.env)
 ```
-MONGODB_URI=mongodb://admin:password@localhost:27017
-DATABASE_NAME=personalens
+# MongoDB Atlas Cloud Database
+MONGODB_URI=mongodb+srv://sadumina:Sadumina2003@sadumina.c82ip.mongodb.net/coconut_analytics?retryWrites=true&w=majority
+DATABASE_NAME=coconut_analytics
 JWT_SECRET=your-super-secret-key-change-this-in-production
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440

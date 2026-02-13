@@ -26,28 +26,10 @@ if [ ! -f "requirements.txt" ]; then
     exit 1
 fi
 
-echo -e "${BLUE}Step 1: Checking MongoDB...${NC}"
-# Check if MongoDB is running
-if docker ps | grep -q mongodb; then
-    echo -e "${GREEN}✓ MongoDB is already running${NC}"
-else
-    echo -e "${YELLOW}MongoDB not found. Starting MongoDB with Docker...${NC}"
-    
-    # Check if container exists but is stopped
-    if docker ps -a | grep -q mongodb; then
-        echo "Starting existing MongoDB container..."
-        docker start mongodb
-    else
-        echo "Creating new MongoDB container..."
-        docker run -d -p 27017:27017 --name mongodb \
-          -e MONGO_INITDB_ROOT_USERNAME=admin \
-          -e MONGO_INITDB_ROOT_PASSWORD=password \
-          mongo:7
-    fi
-    
-    echo -e "${GREEN}✓ MongoDB started successfully${NC}"
-    sleep 2  # Give MongoDB time to start
-fi
+echo -e "${BLUE}Step 1: Checking MongoDB configuration...${NC}"
+# MongoDB Atlas (cloud) is configured in .env - no local MongoDB needed
+echo -e "${GREEN}✓ Using MongoDB Atlas (cloud database)${NC}"
+echo -e "${YELLOW}  → No local MongoDB setup required${NC}"
 echo ""
 
 echo -e "${BLUE}Step 2: Setting up Python environment...${NC}"
