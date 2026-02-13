@@ -4,7 +4,7 @@ Security module for JWT authentication and password hashing.
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.config import settings
@@ -12,9 +12,6 @@ from app.core.database import Database
 import logging
 
 logger = logging.getLogger(__name__)
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
@@ -26,9 +23,41 @@ class SecurityService:
     """
     
     @staticmethod
+    def _truncate_password_bytes(password: str) -> bytes:
+        """
+        Safely truncate password to 72 bytes (bcrypt limit) and return as bytes.
+        
+        This method ensures we don't cut in the middle of a multi-byte UTF-8 character
+        by iteratively reducing the string length until it fits within 72 bytes.
+        
+        Args:
+            password: Plain text password
+            
+        Returns:
+            bytes: Password as UTF-8 bytes, truncated to max 72 bytes
+        """
+        password_bytes = password.encode('utf-8')
+        
+        # If already under limit, return as-is
+        if len(password_bytes) <= 72:
+            return password_bytes
+        
+        # Start with approximate character count and reduce until we're under 72 bytes
+        max_length = 72
+        while len(password[:max_length].encode('utf-8')) > 72:
+            max_length -= 1
+        
+        truncated_bytes = password[:max_length].encode('utf-8')
+        logger.warning(f"Password truncated from {len(password_bytes)} bytes to {len(truncated_bytes)} bytes")
+        return truncated_bytes
+    
+    @staticmethod
     def hash_password(password: str) -> str:
         """
         Hash a plain text password using bcrypt.
+        
+        Bcrypt has a maximum password length of 72 bytes. Passwords longer than this
+        will be automatically truncated to fit within the limit.
         
         Args:
             password: Plain text password
@@ -36,11 +65,19 @@ class SecurityService:
         Returns:
             str: Hashed password
         """
-        # Truncate password to 72 bytes if needed (bcrypt limit)
-        password_bytes = password.encode('utf-8')
-        if len(password_bytes) > 72:
-            password = password_bytes[:72].decode('utf-8', errors='ignore')
-        return pwd_context.hash(password)
+        try:
+            # Truncate password to 72 bytes if needed (bcrypt limit)
+            password_bytes = SecurityService._truncate_password_bytes(password)
+            
+            # Generate salt and hash the password
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(password_bytes, salt)
+            
+            # Return as string
+            return hashed.decode('utf-8')
+        except Exception as e:
+            logger.error(f"Password hashing failed: {e}")
+            raise
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -54,7 +91,16 @@ class SecurityService:
         Returns:
             bool: True if password matches, False otherwise
         """
-        return pwd_context.verify(plain_password, hashed_password)
+        try:
+            # Apply same truncation as during hashing to ensure consistency
+            password_bytes = SecurityService._truncate_password_bytes(plain_password)
+            hashed_bytes = hashed_password.encode('utf-8')
+            
+            # Verify the password
+            return bcrypt.checkpw(password_bytes, hashed_bytes)
+        except Exception as e:
+            logger.error(f"Password verification failed: {e}")
+            return False
     
     @staticmethod
     def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:

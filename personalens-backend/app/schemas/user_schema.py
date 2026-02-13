@@ -1,7 +1,7 @@
 """
 Pydantic schemas for user authentication and registration.
 """
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -13,6 +13,23 @@ class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=50, description="Unique username")
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., min_length=6, description="User password (min 6 characters)")
+    
+    @field_validator('password')
+    @classmethod
+    def validate_password_length(cls, v: str) -> str:
+        """
+        Validate password length and warn if it exceeds bcrypt's 72-byte limit.
+        
+        Note: Passwords longer than 72 bytes will be automatically truncated
+        during hashing due to bcrypt limitations.
+        """
+        password_bytes = v.encode('utf-8')
+        if len(password_bytes) > 72:
+            # Just log a warning, don't reject - the SecurityService will handle truncation
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Password exceeds 72 bytes ({len(password_bytes)} bytes). Will be truncated during hashing.")
+        return v
     
     class Config:
         json_schema_extra = {
