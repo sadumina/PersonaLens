@@ -1,0 +1,109 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║         QUICK FIX - Registration 500 Error                           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+🔴 PROBLEM: Registration fails with 500 Internal Server Error
+🔍 ROOT CAUSE: MongoDB Atlas IP not whitelisted (DNS resolution fails)
+
+✅ SOLUTION - Whitelist IP in MongoDB Atlas (5 minutes):
+
+1️⃣  GO TO: https://cloud.mongodb.com/
+    └─ Log in with your credentials
+
+2️⃣  NAVIGATE: Sidebar → Security → Network Access
+
+3️⃣  CLICK: "Add IP Address" button
+
+4️⃣  CHOOSE ONE:
+    
+    OPTION A - Allow All (Testing Only):
+    ┌────────────────────────────────────────┐
+    │ IP Address: 0.0.0.0/0                  │
+    │ Comment: Allow all for testing         │
+    └────────────────────────────────────────┘
+    ⚠️  Use only for development/testing
+    
+    OPTION B - Specific IP (Production):
+    ┌────────────────────────────────────────┐
+    │ Get your IP: curl ifconfig.me          │
+    │ Add that IP to whitelist              │
+    └────────────────────────────────────────┘
+
+5️⃣  CLICK: "Confirm"
+
+6️⃣  WAIT: 1-2 minutes for changes to propagate
+
+7️⃣  RESTART BACKEND:
+    cd personalens-backend
+    source venv/bin/activate
+    uvicorn app.main:app --reload
+
+8️⃣  TEST: Try registration again in frontend
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                      VERIFY THE FIX                                  ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+Check backend health:
+┌────────────────────────────────────────────────────────────────────┐
+│ curl http://localhost:8000/health                                  │
+└────────────────────────────────────────────────────────────────────┘
+
+✅ SUCCESS (MongoDB Connected):
+{
+  "status": "ok",
+  "database": {"status": "connected"}
+}
+
+❌ STILL ISSUES (MongoDB Disconnected):
+{
+  "status": "degraded",
+  "database": {"status": "disconnected", "error": "..."}
+}
+
+If still disconnected after whitelisting:
+- Wait another minute
+- Restart backend
+- Check MongoDB Atlas cluster is RUNNING (not paused)
+- Verify .env has correct MongoDB URI
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                      ALTERNATIVE SOLUTIONS                           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+📌 Use Local MongoDB (if Atlas unavailable):
+┌────────────────────────────────────────────────────────────────────┐
+│ 1. docker run -d -p 27017:27017 --name mongodb mongo:7             │
+│ 2. Update .env:                                                    │
+│    MONGODB_URI=mongodb://localhost:27017                           │
+│    DATABASE_NAME=coconut_analytics                                 │
+│ 3. Restart backend                                                 │
+└────────────────────────────────────────────────────────────────────┘
+
+📌 Check MongoDB Atlas Cluster Status:
+- Cluster must be RUNNING (green indicator)
+- If PAUSED (yellow), click "Resume"
+- If deleted, create new cluster
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                      CODE IMPROVEMENTS MADE                          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+✅ Backend now starts even if MongoDB unavailable
+✅ Connection timeout added (10 seconds, was infinite)
+✅ Clear error messages with troubleshooting steps
+✅ Health endpoint shows database connection status
+✅ Fast failure instead of hanging
+
+The registration error is NOT a code bug - it's a configuration issue.
+The code now handles this gracefully and tells you how to fix it!
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                      NEED MORE HELP?                                 ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+📖 Read: MONGODB_CONNECTION_FIX.md (detailed guide)
+📖 Read: REGISTRATION_TROUBLESHOOTING.md (step-by-step)
+
+💡 TIP: Backend logs show exactly what's wrong:
+    Look for lines with ❌ or ✅ emoji
