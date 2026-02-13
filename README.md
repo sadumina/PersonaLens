@@ -244,24 +244,65 @@ npm test
 
 ## 🚀 Production Deployment
 
-1. **Update environment variables**
-   - Set strong `JWT_SECRET`
-   - Use production MongoDB URI
-   - Update `CORS_ORIGINS` with production URLs
+### Quick Deploy
 
-2. **Build and deploy with Docker**
+**Want to deploy to production?** See our comprehensive deployment guides:
+
+- **[HOW_TO_DEPLOY.txt](HOW_TO_DEPLOY.txt)** - Quick visual guide with 3 deployment options
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Complete guide covering all platforms
+- **[PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)** - Pre and post-deployment checklist
+
+### Deployment Options
+
+1. **Docker Compose (Easiest)**
    ```bash
-   docker-compose -f docker-compose.yml up -d
+   # Configure environment
+   cp personalens-backend/.env.example personalens-backend/.env
+   nano personalens-backend/.env  # Edit with your settings
+   
+   # Deploy
+   docker-compose up --build -d
    ```
 
-3. **Set up SSL/TLS**
-   - Use nginx or Caddy for reverse proxy
-   - Obtain SSL certificates (Let's Encrypt)
+2. **Cloud Platforms**
+   - DigitalOcean Droplet (Recommended - $12/month)
+   - AWS EC2
+   - Google Cloud Run
+   - Azure Container Instances
+   - Heroku
 
-4. **Monitor and scale**
-   - Set up logging and monitoring
-   - Configure backup for MongoDB
-   - Scale services as needed
+3. **Manual Deployment**
+   - Traditional server setup
+   - Custom configurations
+
+### Pre-Deployment Requirements
+
+✅ MongoDB Atlas account and connection string  
+✅ Strong JWT secret (32+ characters)  
+✅ Domain name (optional but recommended)  
+✅ SSL certificate (Let's Encrypt is free)
+
+### Key Configuration
+
+```env
+# Backend .env
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/db
+JWT_SECRET=your-super-secret-key-min-32-chars
+CORS_ORIGINS=["https://yourdomain.com"]
+ENVIRONMENT=production
+```
+
+### Verify Deployment
+
+```bash
+# Check health
+curl https://yourdomain.com/api/health
+
+# View logs
+docker-compose logs -f
+```
+
+For detailed instructions, troubleshooting, and platform-specific guides, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
 
 ## 🔒 Security
 
