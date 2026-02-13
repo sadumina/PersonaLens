@@ -62,7 +62,7 @@ const Login = () => {
     setLoading(false);
     
     if (result.success) {
-      navigate('/upload');
+      navigate('/history');
     } else {
       setApiError(result.error);
     }
