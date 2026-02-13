@@ -1,12 +1,12 @@
-FROM node:18-alpine as build
+FROM node:22-alpine as build
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with retry logic
+RUN npm install --verbose --legacy-peer-deps || npm install --verbose --legacy-peer-deps
 
 # Copy source code
 COPY . .

@@ -12,7 +12,7 @@ class UserRegister(BaseModel):
     """
     username: str = Field(..., min_length=3, max_length=50, description="Unique username")
     email: EmailStr = Field(..., description="User email address")
-    password: str = Field(..., min_length=6, description="User password (min 6 characters)")
+    password: str = Field(..., min_length=6, max_length=72, description="User password (min 6, max 72 characters)")
     
     class Config:
         json_schema_extra = {
@@ -29,7 +29,7 @@ class UserLogin(BaseModel):
     Schema for user login request.
     """
     email: EmailStr = Field(..., description="User email address")
-    password: str = Field(..., description="User password")
+    password: str = Field(..., max_length=72, description="User password")
     
     class Config:
         json_schema_extra = {
