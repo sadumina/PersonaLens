@@ -242,6 +242,25 @@ npm test
    - Configure backup for MongoDB
    - Scale services as needed
 
+## 🔒 Security
+
+PersonaLens implements multiple layers of security:
+
+- **Password Security**: Bcrypt hashing with salt
+- **Authentication**: JWT tokens for stateless auth
+- **Authorization**: Protected API routes with dependency injection
+- **CORS**: Configured origins to prevent unauthorized access
+- **Input Validation**: Pydantic schemas validate all inputs
+- **File Security**: Type and size validation on uploads
+- **Database**: NoSQL (MongoDB) prevents SQL injection
+- **Dependencies**: Regular security scanning with patched versions
+  - FastAPI 0.109.1 (ReDoS vulnerability patched)
+  - python-multipart 0.0.22 (Multiple vulnerabilities patched)
+
+See [SECURITY_FIXES.md](SECURITY_FIXES.md) for detailed security patch information.
+
+**Security Status**: ✅ No known vulnerabilities
+
 ## 📝 License
 
 This project is licensed under the MIT License.
