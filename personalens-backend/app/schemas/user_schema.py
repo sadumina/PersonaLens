@@ -1,7 +1,7 @@
 """
 Pydantic schemas for user authentication and registration.
 """
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
 
@@ -12,15 +12,7 @@ class UserRegister(BaseModel):
     """
     username: str = Field(..., min_length=3, max_length=50, description="Unique username")
     email: EmailStr = Field(..., description="User email address")
-    password: str = Field(..., min_length=6, description="User password (min 6 characters, max 72 bytes)")
-    
-    @field_validator('password')
-    @classmethod
-    def validate_password_bytes(cls, v: str) -> str:
-        """Validate password doesn't exceed 72 bytes when UTF-8 encoded."""
-        if len(v.encode('utf-8')) > 72:
-            raise ValueError('Password cannot exceed 72 bytes when UTF-8 encoded')
-        return v
+    password: str = Field(..., min_length=6, description="User password (min 6 characters)")
     
     class Config:
         json_schema_extra = {
@@ -38,14 +30,6 @@ class UserLogin(BaseModel):
     """
     email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., description="User password")
-    
-    @field_validator('password')
-    @classmethod
-    def validate_password_bytes(cls, v: str) -> str:
-        """Validate password doesn't exceed 72 bytes when UTF-8 encoded."""
-        if len(v.encode('utf-8')) > 72:
-            raise ValueError('Password cannot exceed 72 bytes when UTF-8 encoded')
-        return v
     
     class Config:
         json_schema_extra = {

@@ -36,6 +36,10 @@ class SecurityService:
         Returns:
             str: Hashed password
         """
+        # Truncate password to 72 bytes if needed (bcrypt limit)
+        password_bytes = password.encode('utf-8')
+        if len(password_bytes) > 72:
+            password = password_bytes[:72].decode('utf-8', errors='ignore')
         return pwd_context.hash(password)
     
     @staticmethod
